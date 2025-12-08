@@ -2,6 +2,7 @@ package flow
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	pb "github.com/openzee/point-flow/proto"
@@ -18,15 +19,8 @@ type Point struct {
 	pbPoint         *pb.Point   //协议点位
 }
 
-func LoadFromMessage(b []byte) (*Point, error) {
-
-	pt := &pb.Point{}
-
-	if err := proto.Unmarshal(b); err != nil {
-		return nil, err
-	}
-
-	return nil, nil
+func (obj *Point) PointPrimaryKey() string {
+	return strconv.FormatUint(obj.Original.PointPrimaryKey, 10)
 }
 
 func (obj *Point) String() string {
