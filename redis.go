@@ -11,6 +11,7 @@ import (
 type CacheService struct {
 	redisClient *redis.Client
 	ctx         context.Context
+	cancelFn    context.CancelFunc
 }
 
 func CreateCacheService(redis_url string) (*CacheService, error) {
@@ -20,7 +21,7 @@ func CreateCacheService(redis_url string) (*CacheService, error) {
 		return nil, err
 	}
 
-	ctx := context.Background()
+	ctx, cancelFn := context.WithCancel(context.Background())
 
 	redisClient := redis.NewClient(redis_opt)
 
@@ -38,11 +39,16 @@ func CreateCacheService(redis_url string) (*CacheService, error) {
 	return &CacheService{
 		redisClient: redisClient,
 		ctx:         ctx,
+		cancelFn:    cancelFn,
 	}, nil
 }
 
-func (obj *CacheService) Cancel() {
-	obj.ctx.Done()
+func (obj *CacheService) Stop() {
+	if err := obj.redisClient.Close(); err != nil {
+		log.Errorf("Redis client close fails, err:%v", err)
+	}
+
+	obj.cancelFn()
 }
 
 func (obj *CacheService) RegisterChannel(c chan BatchPoint) {

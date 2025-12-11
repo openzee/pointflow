@@ -14,7 +14,7 @@ func TestC(t *testing.T) {
 
 	time.Sleep((3 * time.Second))
 
-	svc.Cancel()
+	svc.Stop()
 
 	time.Sleep((5 * time.Second))
 }
