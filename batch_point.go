@@ -5,18 +5,19 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 )
 
 type BatchPoint []*Point
 
-func (batch BatchPoint) PushRedis(redisClient *redis.Client) error {
+func (batch BatchPoint) PushToRedis(redisClient *redis.Client) error {
 
 	ctx := context.Background()
 
 	pipe := redisClient.Pipeline()
 
 	for _, pt := range batch {
-		b, err := pt.Marshal()
+		b, err := proto.Marshal(pt.ToProtoPoint())
 		if err != nil {
 			logrus.Errorf("%v Marshal fails. err:%v", pt, err) //部分失败，并不进行处理
 			continue

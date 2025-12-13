@@ -6,16 +6,14 @@ import (
 
 	pb "github.com/openzee/point-cache/proto"
 	xlsx "github.com/openzee/xlsx-loader"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// 离散的一级数采的一级点位，在cache中交换的目标
+// 其他的模块，与cache交互的信息
 type Point struct {
-	Original        *xlsx.Point //原始的点位信息
-	Value           interface{} //数据值
-	ChangeTimestamp time.Time   //数据的变化时间
-	pbPoint         *pb.Point   //协议点位
+	Value           interface{}                 //数据值
+	ChangeTimestamp time.Time                   //数据的变化时间
+	Original        *xlsx.DiscretePointMetadata //原始的点位信息
 }
 
 func (obj *Point) String() string {
@@ -26,22 +24,13 @@ func (obj *Point) String() string {
 		obj.Value)
 }
 
-func (obj *Point) Marshal() ([]byte, error) {
+func (obj *Point) ToProtoPoint() *pb.Point {
 
-	pt, err := obj.toPbPoint()
-	if err != nil {
-		return nil, err
-	}
-
-	return proto.Marshal(pt)
-}
-
-// 该函数负责将各种不通协议的数据类型，统一对齐到采集后的协议类型
-func (obj *Point) toPbPoint() (*pb.Point, error) {
-
-	pt := &pb.Point{
+	pt := pb.Point{
 		CreatedAt: timestamppb.New(obj.ChangeTimestamp),
 		VId:       obj.Original.PointPrimaryKey,
+		VAlias:    &obj.Original.PointName,
+		VDevice:   &obj.Original.Equipment,
 	}
 
 	switch x := obj.Value.(type) {
@@ -84,5 +73,5 @@ func (obj *Point) toPbPoint() (*pb.Point, error) {
 
 	}
 
-	return pt, nil
+	return &pt
 }

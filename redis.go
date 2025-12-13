@@ -59,7 +59,7 @@ func (obj *CacheService) RegisterChannel(c chan BatchPoint) {
 			log.Error("Stop Service")
 			return
 		case batch := <-c:
-			batch.PushRedis(obj.redisClient)
+			batch.PushToRedis(obj.redisClient)
 		}
 	}()
 }
